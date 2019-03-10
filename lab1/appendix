@@ -1,0 +1,49 @@
+int lunchTime = 20;
+        for (int i = 0; i < lunchTime; i++) {
+            float time = clock();
+            answer = matrixs::commonMultiply(matrix1, matrix2);
+            time = clock() - time;
+            std::cout << "Common time #" << i << " : " << ((float) time) / CLOCKS_PER_SEC << std::endl;
+        }
+        std::cout << "________________" << std::endl;
+        for (int i = 0; i < lunchTime; i++) {
+            float time = clock();
+            answer = matrixs::parallelMultiply(matrix1, matrix2, 1);
+            time = clock() - time;
+            std::cout << "Parallel time #" << i << " : " << ((float) time) / CLOCKS_PER_SEC << std::endl;
+        }
+        std::cout << "________________" << std::endl;
+        for (int i = 0; i < lunchTime; i++) {
+            float time = clock();
+            answer = matrixs::dynamicScheduleMultiply(matrix1, matrix2, 1);
+            time = clock() - time;
+            std::cout << "Dynamic time #" << i << " : " << ((float) time) / CLOCKS_PER_SEC << std::endl;
+        }
+        std::cout << "________________" << std::endl;
+        for (int i = 0; i < lunchTime; i++) {
+            float time = clock();
+            answer = matrixs::guidedScheduleMultiply(matrix1, matrix2, 1);
+            time = clock() - time;
+            std::cout << "Guided time #" << i << " : " << ((float) time) / CLOCKS_PER_SEC << std::endl;
+        }
+        std::cout << "________________" << std::endl;
+        for (int i = 0; i < lunchTime; i++) {
+            float time = clock();
+            answer = matrixs::parallelMultiply(matrix1, matrix2, chunksSize);
+            time = clock() - time;
+            std::cout << "Parallel time(chunked) #" << i << " : " << ((float) time) / CLOCKS_PER_SEC << std::endl;
+        }
+        std::cout << "________________" << std::endl;
+        for (int i = 0; i < lunchTime; i++) {
+            float time = clock();
+            answer = matrixs::dynamicScheduleMultiply(matrix1, matrix2, chunksSize);
+            time = clock() - time;
+            std::cout << "Dynamic time(chunked) #" << i << " : " << ((float) time) / CLOCKS_PER_SEC << std::endl;
+        }
+        std::cout << "________________" << std::endl;
+        for (int i = 0; i < lunchTime; i++) {
+            float time = clock();
+            answer = matrixs::guidedScheduleMultiply(matrix1, matrix2, chunksSize);
+            time = clock() - time;
+            std::cout << "Guided time(chunked) #" << i << " : " << ((float) time) / CLOCKS_PER_SEC << std::endl;
+        }

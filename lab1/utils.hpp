@@ -1,7 +1,3 @@
-//
-// Created by Kirill on 10.03.2019.
-//
-
 #ifndef LAB1_UTILS_HPP
 #define LAB1_UTILS_HPP
 
@@ -11,10 +7,9 @@
 #include <ctime>
 
 namespace utils {
-    void generateMatrix(const std::string &matrixroute) {
+    void generateMatrix(const std::string &matrixroute, int row, int col) {
         srand(time(NULL));
-        std::ofstream fout(matrixroute, std::ios_base::trunc);
-        const int row = 1000, col = 1000;
+        std::ofstream fout(matrixroute, std::ios_base::trunc);;
         fout << row << " " << col << std::endl;
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < col; j++) {
@@ -26,10 +21,10 @@ namespace utils {
         fout.close();
     }
 
-    void answer(std::vector<std::vector<double>> matrix) {
+    void answer(std::vector<std::vector<int>> matrix) {
         std::ofstream fout("answer.txt", std::ios_base::trunc);
         for (int i = 0; i < matrix.size(); i++) {
-            for (int j = 0; j < matrix.size(); j++) {
+            for (int j = 0; j < matrix[i].size(); j++) {
                 fout << matrix[i][j] << " ";
             }
             fout << std::endl;
@@ -47,8 +42,8 @@ namespace utils {
         std::cout << std::endl;
     }
 
-    std::vector<std::vector<double>> load(const std::string &matrixroute) {
-        std::vector<std::vector<double>> matrix;
+    std::vector<std::vector<int>> load(const std::string &matrixroute) {
+        std::vector<std::vector<int>> matrix;
         int row, col;
         std::ifstream file(matrixroute);
         if (!file) {
@@ -58,7 +53,7 @@ namespace utils {
 
         file >> row >> col;
         if (row < 1 || col < 1) {
-            std::cerr << "Matrix sizes are out of bounds.\n";
+            std::cerr << "depr sizes are out of bounds.\n";
             return matrix;
         }
 
