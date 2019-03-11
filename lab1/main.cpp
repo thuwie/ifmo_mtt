@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
         utils::generateMatrix(file1, atoi(argv[3]), atoi(argv[4]));
         utils::generateMatrix(file2, atoi(argv[4]), atoi(argv[5]));
     } else {
-        if (argc != 5 || !argv[1] || !argv[2] || !argv[3]) {
+        if (argc != 4 || !argv[1] || !argv[2] || !argv[3]) {
             cout << "Corrupted arguments!" << std::endl;
             return 1;
         }
