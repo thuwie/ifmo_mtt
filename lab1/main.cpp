@@ -9,10 +9,6 @@
 using namespace std;
 
 int main(int argc, char **argv) {
-//    if (argc != 3 || !argv[1] || !argv[2]) {
-//        cout << "Corrupted arguments!" << std::endl;
-//        return 1;
-//    }
     string file1(argv[1]);
     string file2(argv[2]);
     int maxThreadNum = 4;
