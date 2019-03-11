@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
             }
             default:break;
         }
-
+        std::cout <<((float) time) / CLOCKS_PER_SEC << std::endl;
         utils::answer(answer);
     }
 
