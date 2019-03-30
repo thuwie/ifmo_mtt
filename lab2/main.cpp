@@ -11,7 +11,34 @@ using namespace std;
 
 void generateRoot(const string &matFile, const string &coefFile, int rows, int cols);
 void calculateRoot(const string &matFile, const string &coefFile, const string &outFile, float precision);
-void jacobi(vector<vector<float>> A, vector<vector<float>> X, int rows, int columns, float precision);
+//void jacobi(vector<vector<float>> A, vector<vector<float>> X, int rows, int columns, float precision);
+void Jacobi(long double** A, long double* F, long double* X, int rows, int cols, double eps)
+{
+	long double* TempX = new long double[rows];
+	long double norm; // норма, определяемая как наибольшая разность компонент столбца иксов соседних итераций.
+
+	do {
+		for (int i = 0; i < rows; i++) {
+			TempX[i] = F[i];
+			for (int g = 0; g < cols; g++) {
+				if (i != g)
+					TempX[i] -= A[i][g] * X[g];
+			}
+			TempX[i] /= A[i][i];
+		}
+		norm = fabs(X[0] - TempX[0]);
+		for (int h = 0; h < rows; h++) {
+			if (fabs(X[h] - TempX[h]) > norm)
+				norm = fabs(X[h] - TempX[h]);
+			X[h] = TempX[h];
+		}
+	} while (norm > eps);
+
+	/*for (int i = 0; i < N; i++) {
+		cout << "Temp [" << i << "] = " << TempX[i] << endl;
+	}*/
+	delete[] TempX;
+}
 
 int main(int argc, char* argv[]) {
 	MPI_Init(NULL, NULL);
@@ -57,8 +84,35 @@ int main(int argc, char* argv[]) {
 			string inputCoefsFile = argv[2];
 			string outputMatrixFile = argv[3];
 			float precision = std::atof(argv[4]);
-			calculateRoot(inputMatrixFile, inputCoefsFile, outputMatrixFile, precision);
-			// cout << "boi oh boi";
+			
+			long double** A;
+			long double* F;
+			long double* X;
+			int rows, cols;
+			utils::load(inputMatrixFile, A, F, inputCoefsFile, X, rows,cols);
+			/*for (int i = 0; i < 8; i++) {
+				for (int j = 0; j < 8; j++) {
+					cout << "A[" << i << "]["<<j<<"] = " << A[i][j] << "   ";
+				}
+				cout << endl;
+			}
+			for (int j = 0; j < 8; j++) {
+				cout << "F[" << j << "] = " << F[j] << "  " << endl;
+			}
+			for (int j = 0; j < 8; j++) {
+				cout << "X[" << j << "] = " << X[j] << " " << endl;
+			}*/
+			int N = rows;
+			cout << N;
+			for (int i = 0; i < rows; i++) {
+				cout << fixed<<"Pupa[" << i << "]: " << A[i][rows] << endl;
+			}
+			cout << "popy Mb|L?" << endl;
+			Jacobi(A, F, X, rows,cols, precision);
+			for (int j = 0; j < N; j++) {
+				cout << "X[" << j << "] = " << X[j] << "  " << endl;
+			}
+			utils::answer(outputMatrixFile,X,N);
 			//getchar();
 			return 0;
 		}
@@ -80,13 +134,14 @@ void generateRoot(const string &matFile, const string &coefFile, int rows, int c
 }
 
 void calculateRoot(const string &matFile, const string &coefFile, const string &outFile, float precision) {
-	cout << "Calculate root" << endl;
+	/*cout << "Calculate root" << endl;
 	vector<vector<float>> matrix = utils::load(matFile);
-	vector<vector<float>> coefs = utils::load(coefFile);
+	vector<float> coefs = utils::loadCoef(coefFile);
 	cout << "Calculate root" << endl;
-	jacobi(matrix, coefs, matrix.size(), matrix[0].size(), precision);
-	utils::answer(outFile, coefs);
 
+	/*jacobi(matrix, coefs, matrix.size(), matrix[0].size(), precision);
+	utils::answer(outFile, coefs);*/
+	
 	/*
 	vector<vector<int>> matrix1 = utils::load(file1);
 	vector<vector<int>> matrix2 = utils::load(file2);
@@ -97,56 +152,3 @@ void calculateRoot(const string &matFile, const string &coefFile, const string &
 	utils::answer(answer); */
 }
 
-// rows,columns - размерность матрицы; vector<vector<int>> matrix - матрица коэффициентов,
-// coefs[rows] - начальное приближение, ответ записывается также в coefs[rows];
-void jacobi(vector<vector<float>> matrix, vector<vector<float>> coefs, int rows, int columns, float precision)
-{
-	// double* TempX = new double[N];
-	vector<vector<float>> TempX;
-	TempX.resize(rows);
-	TempX = coefs;
-	double norm; // норма, определяемая как наибольшая разность компонент столбца иксов соседних итераций.
-
-	do {
-		for (int i = 0; i < rows; i++) {
-			TempX[i][0] = matrix[i][columns - 1];
-			for (int g = 0; g < columns-1; g++) {
-				if (i != g)
-					TempX[i][0] -= matrix[i][g] * coefs[g][0];
-			}
-			TempX[i][0] /= matrix[i][i];
-		}
-		norm = fabs(coefs[0][0] - TempX[0][0]);
-		for (int h = 0; h < rows; h++) {
-			if (fabs(coefs[h][0] - TempX[h][0]) > norm)
-				norm = fabs(coefs[h][0] - TempX[h][0]);
-			coefs[h][0] = TempX[h][0];
-		}
-		printf("%20.10f\n", norm);
-		//cout << "Norm: " << norm << " Precision: " << precision << endl;
-	} while (norm > precision);
-	// delete[]7 TempX;
-}
-
-/*void jacobi(vector<vector<float>> matrix, vector<vector<float>> coefs, int rows, int columns, float precision) {
-	cout << "debux" << endl;
-	vector<vector<float>> tempVector;
-	tempVector = coefs;
-	cout << "debux" << endl;
-	bool flag = false; //OutputDebugStringW(L"My output string.");
-	//System.Diagnostics.Debug.WriteLine("your message here");
-	while (flag == false) {
-		cout << "debux" << endl;
-		for (int i = 0; i < rows; i++) {
-			float tempSum = matrix[1][columns];
-			for (int j = 0; i < columns - 1; j++) {
-				if (i != j) {
-					tempSum -= matrix[i][j] * tempVector[i][0];
-				}
-			}
-			cout << tempSum << endl;
-		}
-		flag = true;
-	}
-	getchar();
-}*/

@@ -152,7 +152,6 @@
   <ItemGroup>
     <ClInclude Include="utils.hpp" />
     <ClInclude Include="lab2\pch.h" />
-    <ClInclude Include="utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cmake-build-debug\cmakefiles\3.13.2\CMakeDetermineCompilerABI_C.bin" />

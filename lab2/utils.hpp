@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <random>
 #include <string>
 #include <ctime>
 
@@ -25,45 +26,64 @@ outfile
 */
 
 namespace utils {
+	float get_random()
+	{
+		static std::default_random_engine e;
+		static std::uniform_real_distribution<> dis(0, 1); // rage 0 - 1
+		return dis(e);
+	}
 	void generateMatrix(const std::string &matrixroute, int row, int col) {
 		srand(time(NULL));
 		std::ofstream fout(matrixroute, std::ios_base::trunc);;
-		fout << row << " " << col << std::endl;
+		fout << row << " " << col+1 << std::endl;
 		float sum = 0;
+		float LO = -1.0;
+		float HI = 1.0;
 		for (int i = 0; i < row; i++) {
-			for (int j = 0; j < col - 1; j++) {
-				int right = (rand() % 20);
-				int left = (rand() % 10);
-				std::string num = "" + std::to_string(right) + "." + std::to_string(left);
-				float endNum = std::stof(num);
-				fout << endNum << " ";
-				sum += endNum;
+			for (int j = 0; j < col; j++) {
+				//float right = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
+				float right = utils::get_random();
+				//int left = (rand() % 10);
+				//std::string num = "" + std::to_string(right) + "." + std::to_string(left);
+				//float endNum = std::stof(num);
+				fout << right << " ";
+				sum += right;
 			}
 			fout << sum << std::endl;
 			sum = 0;
 		}
 		fout.close();
 	}
-
+	
 	void generateCoefs(const std::string &matrixroute, int row) {
 		//srand(time(NULL));
 		std::ofstream fout(matrixroute, std::ios_base::trunc);;
 		fout << row << " " << "1" << std::endl;
 		for (int i = 0; i < row; i++) {
-			int r2 = 1;//(rand() % 1000) - 500;
-			fout << r2 << " ";
+			int right = 1;//(rand() % 1000) - 500;
+			int left = (rand() % 6);
+			std::string num = "" + std::to_string(right) + "." + std::to_string(left);
+			float endNum = std::stof(num);
+			fout << 1.0 << " ";
 			fout << std::endl;
 		}
 		fout.close();
 	}
 
-	void answer(const std::string &outFile, std::vector<std::vector<float>> matrix) {
+	/*void answer(const std::string &outFile, std::vector<std::vector<float>> matrix) {
 		std::ofstream fout(outFile, std::ios_base::trunc);
 		for (int i = 0; i < matrix.size(); i++) {
 			for (int j = 0; j < matrix[i].size(); j++) {
 				fout << matrix[i][j] << " ";
 			}
 			fout << std::endl;
+		}
+		fout.close();
+	}*/
+	void answer(const std::string &outFile, long double* &matrix, int n) {
+		std::ofstream fout(outFile, std::ios_base::trunc);
+		for (int i = 0; i < n; i++) {
+		    fout << matrix[i] << std::endl;
 		}
 		fout.close();
 	}
@@ -78,7 +98,38 @@ namespace utils {
 		std::cout << std::endl;
 	}
 
-	std::vector<std::vector<float>> load(const std::string &matrixroute) {
+	void load(const std::string &matrixroute, long double** &matrix, long double* &answ, const std::string &coefroute, long double* &coef, int &rows, int &cols) {
+		int row, col, t1,t2;
+		std::ifstream file(matrixroute);
+		std::ifstream fileCoef(coefroute);
+		if (!file || !fileCoef) {
+			std::cerr << "Error opening matrix file.\n";
+			return;
+		}
+		file >> row >> col;
+		fileCoef >> t1 >> t2;
+		if (row < 1 || col < 1) {
+			std::cerr << "depr sizes are out of bounds.\n";
+			return;
+		}
+		rows = row;
+		cols = col;
+
+		matrix = new long double *[row];
+		answ = new long double[row];
+		coef = new long double[row];
+		for (int i = 0; i < row; i++) {
+			matrix[i] = new long double[col - 1];
+			
+			for (int j = 0; j < col - 1; j++) {
+				file >> matrix[i][j];
+			}
+			file >> answ[i];
+			fileCoef >> coef[i];
+		}
+
+
+		/*
 		std::vector<std::vector<float>> matrix;
 		int row, col;
 		std::ifstream file(matrixroute);
@@ -102,6 +153,31 @@ namespace utils {
 		for (auto &outer : matrix)
 			for (auto &inner : outer)
 				file >> inner;
+
+		return matrix;*/
+	}
+
+	std::vector<float> loadCoef(const std::string &matrixroute) {
+		std::vector<float> matrix;
+		int row, col;
+		std::ifstream file(matrixroute);
+		if (!file) {
+			std::cerr << "Error opening matrix file.\n";
+			return matrix;
+		}
+
+		file >> row >> col;
+		if (row < 1 || col < 1) {
+			std::cerr << "depr sizes are out of bounds.\n";
+			return matrix;
+		}
+
+		// Size the vector using the values read from the file.
+		matrix.resize(row);
+
+		// Read the input file.
+		for (auto &outer : matrix)
+				file >> outer;
 
 		return matrix;
 	}
