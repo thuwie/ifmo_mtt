@@ -99,35 +99,36 @@ void calculateRoot(const string &matFile, const string &coefFile, const string &
 
 // rows,columns - размерность матрицы; vector<vector<int>> matrix - матрица коэффициентов,
 // coefs[rows] - начальное приближение, ответ записывается также в coefs[rows];
-/*void wjacobi(vector<vector<float>> matrix, vector<vector<float>> coefs, int rows, int columns, float precision)
+void jacobi(vector<vector<float>> matrix, vector<vector<float>> coefs, int rows, int columns, float precision)
 {
 	// double* TempX = new double[N];
-	vector<float> TempX;
+	vector<vector<float>> TempX;
 	TempX.resize(rows);
+	TempX = coefs;
 	double norm; // норма, определяемая как наибольшая разность компонент столбца иксов соседних итераций.
 
 	do {
 		for (int i = 0; i < rows; i++) {
-			TempX[i] = matrix[i][columns - 1];
+			TempX[i][0] = matrix[i][columns - 1];
 			for (int g = 0; g < columns-1; g++) {
 				if (i != g)
-					TempX[i] -= matrix[i][g] * coefs[g][0];
+					TempX[i][0] -= matrix[i][g] * coefs[g][0];
 			}
-			TempX[i] /= matrix[i][i];
+			TempX[i][0] /= matrix[i][i];
 		}
-		norm = fabs(coefs[0][0] - TempX[0]);
+		norm = fabs(coefs[0][0] - TempX[0][0]);
 		for (int h = 0; h < rows; h++) {
-			if (fabs(coefs[h][0] - TempX[h]) > norm)
-				norm = fabs(coefs[h][0] - TempX[h]);
-			coefs[h][0] = TempX[h];
+			if (fabs(coefs[h][0] - TempX[h][0]) > norm)
+				norm = fabs(coefs[h][0] - TempX[h][0]);
+			coefs[h][0] = TempX[h][0];
 		}
 		printf("%20.10f\n", norm);
 		//cout << "Norm: " << norm << " Precision: " << precision << endl;
 	} while (norm > precision);
 	// delete[]7 TempX;
-}*/
+}
 
-void jacobi(vector<vector<float>> matrix, vector<vector<float>> coefs, int rows, int columns, float precision) {
+/*void jacobi(vector<vector<float>> matrix, vector<vector<float>> coefs, int rows, int columns, float precision) {
 	cout << "debux" << endl;
 	vector<vector<float>> tempVector;
 	tempVector = coefs;
@@ -137,16 +138,15 @@ void jacobi(vector<vector<float>> matrix, vector<vector<float>> coefs, int rows,
 	while (flag == false) {
 		cout << "debux" << endl;
 		for (int i = 0; i < rows; i++) {
-			float tempSum = 0;
+			float tempSum = matrix[1][columns];
 			for (int j = 0; i < columns - 1; j++) {
 				if (i != j) {
-					tempSum += matrix[i][j] * tempVector[i][0];
+					tempSum -= matrix[i][j] * tempVector[i][0];
 				}
 			}
-			tempSum += matrix[1][columns];
 			cout << tempSum << endl;
 		}
 		flag = true;
 	}
 	getchar();
-}
+}*/

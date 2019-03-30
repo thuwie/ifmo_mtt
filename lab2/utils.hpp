@@ -9,7 +9,7 @@
 
 /*
 inputfile
-m(rows) n(columns) 
+m(rows) n(columns)
 11 12 13 14 ... b1
 21 22 23 24 ... b2
 31 32 33 34 ... b3
@@ -31,7 +31,7 @@ namespace utils {
 		fout << row << " " << col << std::endl;
 		float sum = 0;
 		for (int i = 0; i < row; i++) {
-			for (int j = 0; j < col-1; j++) {
+			for (int j = 0; j < col - 1; j++) {
 				int right = (rand() % 20);
 				int left = (rand() % 10);
 				std::string num = "" + std::to_string(right) + "." + std::to_string(left);
@@ -48,7 +48,7 @@ namespace utils {
 	void generateCoefs(const std::string &matrixroute, int row) {
 		//srand(time(NULL));
 		std::ofstream fout(matrixroute, std::ios_base::trunc);;
-		fout << row << " " << "1" <<std::endl;
+		fout << row << " " << "1" << std::endl;
 		for (int i = 0; i < row; i++) {
 			int r2 = 1;//(rand() % 1000) - 500;
 			fout << r2 << " ";
