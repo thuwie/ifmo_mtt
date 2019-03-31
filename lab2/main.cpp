@@ -12,19 +12,19 @@ using namespace std;
 void generateRoot(const string &matFile, const string &coefFile, int rows, int cols);
 void calculateRoot(const string &matFile, const string &coefFile, const string &outFile, float precision);
 //void jacobi(vector<vector<float>> A, vector<vector<float>> X, int rows, int columns, float precision);
-void Jacobi(long double** A, long double* F, long double* X, int rows, int cols, double eps)
+void Jacobi(double* A, double* F, double* X, int rows, int cols, double eps)
 {
-	long double* TempX = new long double[rows];
-	long double norm; // норма, определяемая как наибольшая разность компонент столбца иксов соседних итераций.
-
+	double* TempX = new double[rows];
+	double norm; // норма, определяемая как наибольшая разность компонент столбца иксов соседних итераций.
+	cout << "heh" << endl;
 	do {
 		for (int i = 0; i < rows; i++) {
 			TempX[i] = F[i];
-			for (int g = 0; g < cols; g++) {
+			for (int g = 0; g < rows; g++) {
 				if (i != g)
-					TempX[i] -= A[i][g] * X[g];
+					TempX[i] -= A[i * rows + g] * X[g];
 			}
-			TempX[i] /= A[i][i];
+			TempX[i] /= A[i * rows + i];
 		}
 		norm = fabs(X[0] - TempX[0]);
 		for (int h = 0; h < rows; h++) {
@@ -41,23 +41,19 @@ void Jacobi(long double** A, long double* F, long double* X, int rows, int cols,
 }
 
 int main(int argc, char* argv[]) {
-	MPI_Init(NULL, NULL);
+	MPI_Init(&argc, &argv);
 
-	// Get the number of processes
 	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-	// Get the rank of the process
 	int world_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-	// Get the name of the processor
 	char processor_name[MPI_MAX_PROCESSOR_NAME];
 	int name_len;
 	MPI_Get_processor_name(processor_name, &name_len);
 
-	// Print off a hello world message
-	printf("Hello world from processor %s, rank %d out of %d processors\n",
+	printf("Processor %s, rank %d out of %d processors is lock and loaded\n",
 		processor_name, world_rank, world_size);
 
 	// Finalize the MPI environment.
@@ -85,33 +81,30 @@ int main(int argc, char* argv[]) {
 			string outputMatrixFile = argv[3];
 			float precision = std::atof(argv[4]);
 			
-			long double** A;
-			long double* F;
-			long double* X;
+			double* A;
+			double* F;
+			double* X;
 			int rows, cols;
 			utils::load(inputMatrixFile, A, F, inputCoefsFile, X, rows,cols);
-			/*for (int i = 0; i < 8; i++) {
-				for (int j = 0; j < 8; j++) {
-					cout << "A[" << i << "]["<<j<<"] = " << A[i][j] << "   ";
-				}
-				cout << endl;
+			int N = rows;
+			cout << N << endl;
+			/*for (int i = 0; i < rows; i++) {
+				cout << fixed<<"Pupa[" << i << "]: " << A[i][rows] << endl;
+			}*/
+			cout << "popy Mb|L?" << endl;
+			/*for (int j = 0; j < N*(cols-1); j++) {
+				cout << "A[" << j << "] = " << A[j] << "  " << endl;
 			}
-			for (int j = 0; j < 8; j++) {
+			for (int j = 0; j < N; j++) {
 				cout << "F[" << j << "] = " << F[j] << "  " << endl;
 			}
-			for (int j = 0; j < 8; j++) {
-				cout << "X[" << j << "] = " << X[j] << " " << endl;
-			}*/
-			int N = rows;
-			cout << N;
-			for (int i = 0; i < rows; i++) {
-				cout << fixed<<"Pupa[" << i << "]: " << A[i][rows] << endl;
-			}
-			cout << "popy Mb|L?" << endl;
-			Jacobi(A, F, X, rows,cols, precision);
 			for (int j = 0; j < N; j++) {
 				cout << "X[" << j << "] = " << X[j] << "  " << endl;
-			}
+			}*/
+			Jacobi(A, F, X, rows,cols, precision);
+			/*for (int j = 0; j < N; j++) {
+				cout << "X[" << j << "] = " << X[j] << "  " << endl;
+			}*/
 			utils::answer(outputMatrixFile,X,N);
 			//getchar();
 			return 0;

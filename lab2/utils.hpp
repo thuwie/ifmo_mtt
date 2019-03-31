@@ -86,7 +86,7 @@ namespace utils {
 		}
 		fout.close();
 	}*/
-	void answer(const std::string &outFile, long double* &matrix, int n) {
+	void answer(const std::string &outFile, double* &matrix, int n) {
 		std::ofstream fout(outFile, std::ios_base::trunc);
 		for (int i = 0; i < n; i++) {
 		    fout << matrix[i] << std::endl;
@@ -104,7 +104,7 @@ namespace utils {
 		std::cout << std::endl;
 	}
 
-	void load(const std::string &matrixroute, long double** &matrix, long double* &answ, const std::string &coefroute, long double* &coef, int &rows, int &cols) {
+	void load(const std::string &matrixroute, double* &matrix, double* &answ, const std::string &coefroute, double* &coef, int &rows, int &cols) {
 		int row, col, t1,t2;
 		std::ifstream file(matrixroute);
 		std::ifstream fileCoef(coefroute);
@@ -121,14 +121,13 @@ namespace utils {
 		rows = row;
 		cols = col;
 
-		matrix = new long double *[row];
-		answ = new long double[row];
-		coef = new long double[row];
+		matrix = new double[row*(col-1)];
+		answ = new double[row];
+		coef = new double[row];
 		for (int i = 0; i < row; i++) {
-			matrix[i] = new long double[col - 1];
-			
-			for (int j = 0; j < col - 1; j++) {
-				file >> matrix[i][j];
+			//matrix[i] = new long double[col - 1];
+			for (int j = 0; j < col-1; j++) {
+				file >> matrix[i*(col-1) + j];
 			}
 			file >> answ[i];
 			fileCoef >> coef[i];
