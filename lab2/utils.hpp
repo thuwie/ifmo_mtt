@@ -29,28 +29,34 @@ namespace utils {
 	float get_random()
 	{
 		static std::default_random_engine e;
-		static std::uniform_real_distribution<> dis(0, 1); // rage 0 - 1
+		static std::uniform_int_distribution<> dis(1, 10); // rage 0 - 1
 		return dis(e);
 	}
 	void generateMatrix(const std::string &matrixroute, int row, int col) {
 		srand(time(NULL));
 		std::ofstream fout(matrixroute, std::ios_base::trunc);;
 		fout << row << " " << col+1 << std::endl;
+		std::vector<std::vector<float>> matrix;
+		matrix.resize(row);
+		for (auto &outer : matrix)
+			outer.resize(col+1);
+
 		float sum = 0;
-		float LO = -1.0;
-		float HI = 1.0;
 		for (int i = 0; i < row; i++) {
-			for (int j = 0; j < col; j++) {
-				//float right = LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
-				float right = utils::get_random();
-				//int left = (rand() % 10);
-				//std::string num = "" + std::to_string(right) + "." + std::to_string(left);
-				//float endNum = std::stof(num);
-				fout << right << " ";
-				sum += right;
+			for (int j = 0; j < col+1; j++) {
+				float randNum = utils::get_random();
+				matrix[i][j] = (randNum);
+				sum += randNum;
 			}
-			fout << sum << std::endl;
+			matrix[i][i] = sum+1;
 			sum = 0;
+		}
+
+		for (int i = 0; i < row; i++) {
+			for (int j = 0; j < col+1; j++) {
+				fout << matrix[i][j] << " ";
+			}
+			fout << std::endl;
 		}
 		fout.close();
 	}
