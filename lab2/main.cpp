@@ -1,147 +1,98 @@
-#include <iostream>
-#include <cstdlib>
-#include <vector>
-#include <fstream>
-#include <ctime>
-#include "utils.hpp"
-
 #include <mpi.h>
 
-using namespace std;
+#include <chrono>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+#include <tuple>
+#include <vector>
 
-void generateRoot(const string &matFile, const string &coefFile, int rows, int cols);
-void calculateRoot(const string &matFile, const string &coefFile, const string &outFile, float precision);
-//void jacobi(vector<vector<float>> A, vector<vector<float>> X, int rows, int columns, float precision);
-void Jacobi(double* A, double* F, double* X, int rows, int cols, double eps)
-{
-	double* TempX = new double[rows];
-	double norm; // норма, определяемая как наибольшая разность компонент столбца иксов соседних итераций.
-	cout << "heh" << endl;
-	do {
-		for (int i = 0; i < rows; i++) {
-			TempX[i] = F[i];
-			for (int g = 0; g < rows; g++) {
-				if (i != g)
-					TempX[i] -= A[i * rows + g] * X[g];
-			}
-			TempX[i] /= A[i * rows + i];
-		}
-		norm = fabs(X[0] - TempX[0]);
-		for (int h = 0; h < rows; h++) {
-			if (fabs(X[h] - TempX[h]) > norm)
-				norm = fabs(X[h] - TempX[h]);
-			X[h] = TempX[h];
-		}
-	} while (norm > eps);
-
-	/*for (int i = 0; i < N; i++) {
-		cout << "Temp [" << i << "] = " << TempX[i] << endl;
-	}*/
-	delete[] TempX;
-}
+#include "utils.hpp"
+#include "jacobi.hpp"
 
 int main(int argc, char* argv[]) {
+	int world_size, world_rank;
+	
 	MPI_Init(&argc, &argv);
-
-	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-	int world_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-	char processor_name[MPI_MAX_PROCESSOR_NAME];
-	int name_len;
-	MPI_Get_processor_name(processor_name, &name_len);
+	int rows, cols;
+	double* matrix;
+	double* answer;
+	double* coeffs;
+	double* final_coeffs = nullptr;
+	double *matrix_part, *answer_part;
+	int* matrix_element = new int[world_size];
+	int* matrix_offset = new int[world_size];
+	int* answer_element = new int[world_size];
+	int* answer_offset = new int[world_size]; 
+	int data_transfer[3];
+	std::chrono::time_point<std::chrono::steady_clock> time_start, time_end;
 
-	printf("Processor %s, rank %d out of %d processors is lock and loaded\n",
-		processor_name, world_rank, world_size);
+	if (argc != 5)
+		return -1;
 
-	// Finalize the MPI environment.
-	MPI_Finalize();
-	if (argc == 6 ) {
-		
-		int options = atoi(argv[5]); // 0 for the generator root, 1 for the calculation root
+	std::string input_matrix_file = argv[1];
+	std::string input_coeffs_file = argv[2];
+	std::string output_matrix_file = argv[3];
+	double precision = std::atof(argv[4]);
 
-		if (options == 0) {
-			// Generate root
-
-			string inputMatrixFile = argv[1];
-			string inputCoefsFile = argv[2];
-			int rows = atoi(argv[3]);
-			int cols = atoi(argv[4]);
-			generateRoot(inputMatrixFile, inputCoefsFile, rows, cols);
-			//getchar();
-			return 0;
-		}
-		else {
-			// Calculate root
-
-			string inputMatrixFile = argv[1];
-			string inputCoefsFile = argv[2];
-			string outputMatrixFile = argv[3];
-			float precision = std::atof(argv[4]);
-			
-			double* A;
-			double* F;
-			double* X;
-			int rows, cols;
-			utils::load(inputMatrixFile, A, F, inputCoefsFile, X, rows,cols);
-			int N = rows;
-			cout << N << endl;
-			/*for (int i = 0; i < rows; i++) {
-				cout << fixed<<"Pupa[" << i << "]: " << A[i][rows] << endl;
-			}*/
-			cout << "popy Mb|L?" << endl;
-			/*for (int j = 0; j < N*(cols-1); j++) {
-				cout << "A[" << j << "] = " << A[j] << "  " << endl;
-			}
-			for (int j = 0; j < N; j++) {
-				cout << "F[" << j << "] = " << F[j] << "  " << endl;
-			}
-			for (int j = 0; j < N; j++) {
-				cout << "X[" << j << "] = " << X[j] << "  " << endl;
-			}*/
-			Jacobi(A, F, X, rows,cols, precision);
-			/*for (int j = 0; j < N; j++) {
-				cout << "X[" << j << "] = " << X[j] << "  " << endl;
-			}*/
-			utils::answer(outputMatrixFile,X,N);
-			//getchar();
-			return 0;
-		}
+	if (0 == world_rank) {
+		// auto data = utils::read(inputMatrixFile);
+		std::tie(matrix, answer, coeffs, rows, cols) = utils::load(input_matrix_file, input_coeffs_file);
+		data_transfer[0] = 0;
+		data_transfer[1] = rows;
+		data_transfer[2] = cols - 1;
 	}
 	else {
-		// Corrupted arguments
-		cout << "Corrupted arguments";
-		//getchar();
-		return 1;
-	}    
-    return 0;
+		matrix = new double[world_rank];
+		answer = new double[world_rank];
+	}
+
+	MPI_Bcast(&data_transfer, 3, MPI_INT, 0, MPI_COMM_WORLD);
+
+	if (0 != world_rank)
+		coeffs = new double[data_transfer[1]];
+
+	MPI_Bcast(coeffs, data_transfer[1], MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+	utils::distributeRows(
+		world_size, data_transfer[1], data_transfer[2], matrix_element, matrix_offset,
+		answer_element, answer_offset);
+
+	matrix_part = (double*)malloc(sizeof(double) * matrix_element[world_rank]);
+	answer_part = (double*)malloc(sizeof(double) * answer_element[world_rank]);
+
+	MPI_Scatterv(
+		matrix, matrix_element, matrix_offset, MPI_DOUBLE, matrix_part,
+		matrix_element[world_rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+	MPI_Scatterv(
+		answer, answer_element, answer_offset, MPI_DOUBLE, answer_part,
+		answer_element[world_rank], MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+	if (0 == world_rank)
+		time_start = std::chrono::high_resolution_clock::now();
+
+	final_coeffs = parallel::jacobi(
+		answer_element[world_rank], data_transfer[2], matrix_part, answer_part, coeffs, precision,
+		 world_rank, answer_element, answer_offset);
+
+	if (0 == world_rank)
+		time_end = std::chrono::high_resolution_clock::now();
+
+	if (0 == world_rank) {
+		auto duration = time_end - time_start;
+		auto milliseconds =
+			std::chrono::duration_cast<std::chrono::milliseconds>(duration)
+			.count();
+		std::cout << milliseconds << "ms";
+		utils::answer(output_matrix_file, final_coeffs, data_transfer[1]);
+	}
+
+	MPI_Finalize();
+
+	return 0;
 }
-
-void generateRoot(const string &matFile, const string &coefFile, int rows, int cols) {
-	cout << "Generate root" << endl;
-	utils::generateMatrix(matFile, rows, cols);
-	utils::generateCoefs(coefFile, rows);
-	// generateCoefs();
-}
-
-void calculateRoot(const string &matFile, const string &coefFile, const string &outFile, float precision) {
-	/*cout << "Calculate root" << endl;
-	vector<vector<float>> matrix = utils::load(matFile);
-	vector<float> coefs = utils::loadCoef(coefFile);
-	cout << "Calculate root" << endl;
-
-	/*jacobi(matrix, coefs, matrix.size(), matrix[0].size(), precision);
-	utils::answer(outFile, coefs);*/
-	
-	/*
-	vector<vector<int>> matrix1 = utils::load(file1);
-	vector<vector<int>> matrix2 = utils::load(file2);
-	int chunksSize = ((argv[4] != nullptr) ? atoi(argv[4]) : 800 * 1000 / maxThreadNum);
-	float time = clock();
-	vector<vector<int>> answer;
-	std::cout << ((float)time) / CLOCKS_PER_SEC << std::endl;
-	utils::answer(answer); */
-}
-
