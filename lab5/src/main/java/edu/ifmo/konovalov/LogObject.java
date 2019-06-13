@@ -32,7 +32,7 @@ public class LogObject {                        //IP : CLINET :  USER :      TIM
         try {
             return parseLine(line);
         } catch (RuntimeException exception) {
-            log.log(Level.INFO, exception.getMessage());
+//            log.log(Level.INFO, exception.getMessage());
             return null;
         }
     }
@@ -48,5 +48,13 @@ public class LogObject {                        //IP : CLINET :  USER :      TIM
         return new LogObject(matcher.group(5), matcher.group(6), matcher.group(8),
                 logDateTime.format(DATE_FORMATTER));
 
+    }
+
+    public Integer getIntResponseCode() {
+        try {
+            return Integer.valueOf(httpResponseCode);
+        } catch (NumberFormatException numberFormatException) {
+            return null;
+        }
     }
 }
