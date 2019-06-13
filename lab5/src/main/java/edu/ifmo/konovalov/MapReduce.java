@@ -30,9 +30,10 @@ public class MapReduce {
 
         Dataset<Row> dataSet = sparkSession.createDataFrame(data, LogObject.class);
 
+        // ~ 22-23secs
         taskOne(dataSet);
+        // ~ 15-16secs
         taskOneJavaRDD(data);
-
         taskTwo(dataSet);
         taskThree(dataSet);
 
